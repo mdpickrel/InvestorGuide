@@ -27,7 +27,7 @@ public class Loan {
         
     }
 
-    public float getLOAN_INITIAL_AMOUNT() {
+    public float getLOAN_INITIAL_AMOUNT() {     
         return LOAN_INITIAL_AMOUNT;
     }
 
