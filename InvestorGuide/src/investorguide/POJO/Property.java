@@ -220,10 +220,21 @@ public class Property {
     public void setCoop(boolean coop) {
         this.coop = coop;
     }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
     
     public float calculateMontlyCost(){
-        return 0.0f;//TODO: 
-    }public float calculateMonthlRent(){
+        return (taxPerYear+calculateHoa(FREQUENCY.YEARLY)+insurancePerYear+averageRepairCostsPerYear)/12+loan.getMontlyPayment(); 
+    }
+    
+    public float calculateMonthlRent(){
         return 0.0f;//TODO: 
     }public float calculateMontlyProfit(){
         return 0.0f;//TODO: 
@@ -235,6 +246,8 @@ public class Property {
         return 0.0f;//TODO: 
     }public float calculateRequiredSettlementMoney(){
         return 0.0f;//TODO: 
+    }public float calculateHoa(FREQUENCY frequency){
+        return 0.0f;//TODO:
     }
     
     
