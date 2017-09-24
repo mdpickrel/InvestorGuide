@@ -76,6 +76,11 @@ public class Loan {
     private float calcAccruedInterest() {
         return totalLoanAmount-LOAN_INITIAL_AMOUNT;
     }
+
+    @Override
+    public String toString() {
+        return "Loan{" + "LOAN_INITIAL_AMOUNT=" + LOAN_INITIAL_AMOUNT + ", INTEREST_RATE=" + INTEREST_RATE + ", LOAN_LENGTH=" + LOAN_LENGTH + ", montlyPayment=" + montlyPayment + ", totalLoanAmount=" + totalLoanAmount + ", accruedInterest=" + accruedInterest + '}';
+    }
     
     
     

@@ -5,6 +5,9 @@
  */
 package investorguide.POJO;
 
+import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  *
@@ -15,16 +18,18 @@ public class Property {
     private Loan loan;
     private float askingPrice;
     private float downPaymentPercent;
+    private float investmentAmount;
     private float earnestMoneyDeposit;
     private float taxPerYear;
     private float hoa;
-    private FREQUENCY hoaFrequency = FREQUENCY.MONTHLY;
+    private FREQUENCY hoaFrequency;
     private float insurancePerYear;
     private float averageRepairCostsPerYear;
     private float costPerMonth;
     private float desiredProfitPerYear;
     private float rentPerMonth;
     private float roi;
+    private float settlementCashRequired;
     private String address;
     private boolean garage;
     private int numOfBeds;
@@ -42,6 +47,20 @@ public class Property {
     public Property() {
         this.loan = new Loan(0, 4.5f, 0);
     }
+
+    public Property(String description,float askingPrice, float downPaymentPercent, float earnestMoneyDeposit, float taxPerYear, float hoa, FREQUENCY hoaFrequency, float desiredProfitPerYear) {
+        this.askingPrice = askingPrice;
+        this.description = description;
+        this.downPaymentPercent = downPaymentPercent;
+        this.earnestMoneyDeposit = earnestMoneyDeposit;
+        this.taxPerYear = taxPerYear;
+        this.hoaFrequency = hoaFrequency;
+        this.hoa = hoa;
+        this.desiredProfitPerYear = desiredProfitPerYear;
+        this.loan = new Loan((askingPrice-calculateInvestmentAmount()), 4.5f,30);
+        calculateAll();
+    }
+    
 
     public Loan getLoan() {
         return loan;
@@ -157,9 +176,7 @@ public class Property {
 
     public boolean hasGarage() {
         return garage;
-    }
-    
-    
+    }    
 
     public void setGarage(boolean garage) {
         this.garage = garage;
@@ -228,29 +245,123 @@ public class Property {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public float getInvestmentAmount() {
+        return investmentAmount;
+    }
+
+    public void setInvestmentAmount(float investmentAmount) {
+        this.investmentAmount = investmentAmount;
+    }
+
+    public float getSettlementCashRequired() {
+        return settlementCashRequired;
+    }
+
+    public void setSettlementCashRequired(float settlementCashRequired) {
+        this.settlementCashRequired = settlementCashRequired;
+    }
     
     
     public float calculateMontlyCost(){
-        return (taxPerYear+calculateHoa(FREQUENCY.YEARLY)+insurancePerYear+averageRepairCostsPerYear)/12+loan.getMontlyPayment(); 
+        costPerMonth = (taxPerYear+calculateHoa(FREQUENCY.YEARLY)+insurancePerYear+averageRepairCostsPerYear)/12+loan.getMontlyPayment(); 
+        return costPerMonth;
     }
     
     public float calculateMonthlRent(){
-        return 0.0f;//TODO: 
-    }public float calculateMontlyProfit(){
-        return 0.0f;//TODO: 
-    }public float calculateYearlyProfit(){
-        return 0.0f;//TODO: 
-    }public float calculateRoi(){
-        return 0.0f;//TODO: 
-    }public float calculateYearlyInsurance(){
-        return 0.0f;//TODO: 
-    }public float calculateRequiredSettlementMoney(){
-        return 0.0f;//TODO: 
-    }public float calculateHoa(FREQUENCY frequency){
-        return 0.0f;//TODO:
+        rentPerMonth = costPerMonth+(calculateMontlyProfit());
+        return rentPerMonth;
+    }
+    public float calculateMontlyProfit(){
+        return desiredProfitPerYear/12;
+    }
+    public float calculateYearlyProfit(){
+        desiredProfitPerYear = (rentPerMonth-costPerMonth)*12;
+        return desiredProfitPerYear; 
+    }
+    public final float calculateInvestmentAmount(){
+        investmentAmount = askingPrice *downPaymentPercent/100;
+        return investmentAmount;
+    }
+    public float calculateRoi(){
+        roi = 12*(rentPerMonth -costPerMonth)/investmentAmount;
+        return roi;
+    }
+    public float calculateYearlyInsurance(){
+        insurancePerYear = askingPrice/1000f*5f;
+        return insurancePerYear;
+    }
+    public float calculateRequiredSettlementMoney(){
+        Calendar now = Calendar.getInstance();
+        Calendar endOfYear = Calendar.getInstance();
+        endOfYear.set(Calendar.MONTH, 12);
+        endOfYear.set(Calendar.DAY_OF_MONTH,31);
+        long daysRemainingInYear = TimeUnit.MILLISECONDS.toDays(Math.abs(endOfYear.getTimeInMillis()-now.getTimeInMillis()));
+        settlementCashRequired =(investmentAmount)+earnestMoneyDeposit+((daysRemainingInYear-30)*taxPerYear/360); 
+        return settlementCashRequired;
+    }
+    public float calculateHoa(FREQUENCY frequency){
+        float monthly= 0.0f;
+        float yearly=0.0f;
+        float quarterly= 0.0f;
+        switch(hoaFrequency){
+            case MONTHLY:
+                monthly = hoa;
+                yearly = hoa*12;
+                quarterly = hoa*3;
+                break;
+            case QUARTERLY:
+                monthly = hoa/3;
+                quarterly = hoa;
+                yearly = hoa*4;
+                break;
+            case YEARLY:
+                monthly = hoa/12;
+                quarterly = hoa/4;
+                yearly = hoa;
+                break;
+        }
+        hoaFrequency = frequency;
+        switch(frequency){
+            case MONTHLY:
+                hoa = monthly;
+                break;
+            case QUARTERLY:
+                hoa = quarterly;
+                break;
+            case YEARLY:
+                hoa = yearly;
+                break;
+        }
+        return hoa;
+    }
+    
+    private void calculateAll(){
+        calculateYearlyInsurance();
+        calculateMontlyCost();
+        calculateMonthlRent();
+        calculateMontlyProfit();
+        calculateHoa(FREQUENCY.YEARLY);
+        calculateRoi();
+        calculateRequiredSettlementMoney();
+    }
+
+    @Override
+    public String toString() {
+        return "Property{" + "description=" + description + ", loan=" + loan + ", askingPrice=" + askingPrice + ", downPaymentPercent=" + downPaymentPercent + ", investmentAmount=" + investmentAmount + ", earnestMoneyDeposit=" + earnestMoneyDeposit + ", taxPerYear=" + taxPerYear + ", hoa=" + hoa + ", hoaFrequency=" + hoaFrequency + ", insurancePerYear=" + insurancePerYear + ", averageRepairCostsPerYear=" + averageRepairCostsPerYear + ", costPerMonth=" + costPerMonth + ", desiredProfitPerYear=" + desiredProfitPerYear + ", rentPerMonth=" + rentPerMonth + ", roi=" + roi + ", settlementCashRequired=" + settlementCashRequired + ", address=" + address + ", garage=" + garage + ", numOfBeds=" + numOfBeds + ", numOfBaths=" + numOfBaths + ", sqft=" + sqft + ", lotSize=" + lotSize + ", sufficientParking=" + sufficientParking + ", mlsNumber=" + mlsNumber + ", coop=" + coop + '}';
     }
     
     
+      public static void main(String[] args) {
+        SavingsFund fund = new SavingsFund(135000f);
+        System.out.println("Property Info:\n");
+        Property snowBird = new Property("2701 Snowbird",280000f, 35f, 2500f, 2049.40f, 2544, Property.FREQUENCY.YEARLY, 3500f);
+        System.out.println(snowBird.toString());
+        System.out.println("Savings Info:\n");
+        System.out.println(fund.calculateRemainFunds(snowBird)+"");
+        
+        
+    }
     
     
     

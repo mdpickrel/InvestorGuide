@@ -13,6 +13,10 @@ public class SavingsFund {
     
     private float startingBalance;
 
+    public SavingsFund(float startingBalance) {
+        this.startingBalance = startingBalance;
+    }
+
     public float getStartingBalance() {
         return startingBalance;
     }
@@ -23,6 +27,10 @@ public class SavingsFund {
     
     public float calculateRemainFunds(float settlementAmount){
         return startingBalance - settlementAmount;
+    }
+    
+    public float calculateRemainFunds(Property property){
+        return startingBalance = property.getSettlementCashRequired();
     }
     
 }
